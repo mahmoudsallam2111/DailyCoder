@@ -1,0 +1,34 @@
+services:
+  dailycoder.api:
+    image: ${DOCKER_REGISTRY-}dailycoderapi
+    build:
+      context: .
+      dockerfile: src/DailyCoder.Api/Dockerfile
+    ports:
+     - 5000:8000
+     - 5001:8081
+    environment:
+      # Seq
+      # - OTEL_EXPORTER_OTLP_ENDPOINT=http://dailycoder.seq:5341/ingest/otlp
+      # - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      # Aspire Dashboard
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://dailycoder.aspire-dashboard:18889
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+
+
+  dailycoder.seq:
+    image: datalust/seq:2024.3
+    environment:
+      ACCEPT_EULA: "Y"
+    volumes:
+      - ./.containers/seq_data:/data
+    ports:
+      - 8080:80
+      - 5341:5341
+
+  dailycoder.aspire-dashboard:
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:9.0
+    environment:
+      DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS: true
+    ports:
+      - 18888:18888
