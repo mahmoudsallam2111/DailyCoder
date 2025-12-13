@@ -26,13 +26,13 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore
-        run: dotnet restore DailyCoder.sln
+        run: dotnet restore DailyCoder.slnx
 
       - name: Build
-        run: dotnet build DailyCoder.sln --configuration Release --no-restore
+        run: dotnet build DailyCoder.slnx --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test DailyCoder.sln --configuration Release --no-restore --no-build
+        run: dotnet test DailyCoder.slnx --configuration Release --no-restore --no-build
 
       - name: Publish
-        run: dotnet publish DailyCoder.sln --configuration Release --no-restore --no-build
+        run: dotnet publish DailyCoder.slnx --configuration Release --no-restore --no-build
