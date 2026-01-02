@@ -1,23 +1,60 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Data;
+using DailyCoder.Api.Database;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace DailyCoder.Api.Extensions;
 
 public static class DatabaseExtensions
 {
-    public static async Task MigrateDatabaseAsync(this WebApplication app, CancellationToken cancellationToken = default)
+    public static async Task ApplyMigrationsAsync(this WebApplication app)
     {
-        using var scope = app.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<DailyCoder.Api.Database.ApplicationDbContext>();
+        await app.ApplyMigrationsAsync<ApplicationDbContext>();
+        await app.ApplyMigrationsAsync<ApplicationIdentityDbContext>();
+    }
+
+    //public static async Task SeedInitialDataAsync(this WebApplication app)
+    //{
+    //    await using AsyncServiceScope scope = app.Services.CreateAsyncScope();
+    //    using RoleManager<IdentityRole> roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+    //    try
+    //    {
+    //        if (!await roleManager.RoleExistsAsync(Roles.Admin))
+    //        {
+    //            await roleManager.CreateAsync(new IdentityRole(Roles.Admin));
+    //        }
+
+    //        if (!await roleManager.RoleExistsAsync(Roles.Member))
+    //        {
+    //            await roleManager.CreateAsync(new IdentityRole(Roles.Member));
+    //        }
+
+    //        app.Logger.LogInformation("Roles created successfully");
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        app.Logger.LogError(ex, "An error occurred while seeding initial data");
+    //        throw;
+    //    }
+    //}
+
+    private static async Task ApplyMigrationsAsync<TDbContext>(this WebApplication app)
+        where TDbContext : DbContext
+    {
+        await using AsyncServiceScope scope = app.Services.CreateAsyncScope();
+        await using TDbContext dbContext = scope.ServiceProvider.GetRequiredService<TDbContext>();
+
         try
         {
-          await dbContext.Database.MigrateAsync(cancellationToken);
-            app.Logger.LogInformation("Database migration completed successfully.");
+            await dbContext.Database.MigrateAsync();
+            app.Logger.LogInformation("Database migrations for {DbContext} applied successfully", typeof(TDbContext).Name);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            app.Logger.LogError(e, "An error occurred while migrating the database.");
+            app.Logger.LogError(ex, "An error occurred while applying database migrations for {DbContext}", typeof(TDbContext).Name);
             throw;
         }
-
     }
 }
+
