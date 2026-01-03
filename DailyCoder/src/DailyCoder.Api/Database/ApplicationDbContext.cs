@@ -1,8 +1,10 @@
-﻿using DailyCoder.Api.Entities;
+﻿using DailyCoder.Api.Attributes;
+using DailyCoder.Api.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace DailyCoder.Api.Database;
 
+[ConnectionStringName("DefaultConnection")]
 public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
 {
     public DbSet<Habit> Habits => Set<Habit>();

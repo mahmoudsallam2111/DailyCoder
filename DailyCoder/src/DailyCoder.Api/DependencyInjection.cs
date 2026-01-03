@@ -1,5 +1,9 @@
-﻿using Asp.Versioning;
+﻿using System;
+using Asp.Versioning;
 using DailyCoder.Api.Database;
+using DailyCoder.Api.Database.Abstractions;
+using DailyCoder.Api.Database.Extensions;
+using DailyCoder.Api.Database.Implemetaions;
 using DailyCoder.Api.DTOs.Habits;
 using DailyCoder.Api.Entities;
 using DailyCoder.Api.Middlewares;
@@ -64,18 +68,22 @@ public static class DependencyInjection
 
     public static WebApplicationBuilder AddDatabase(this WebApplicationBuilder builder)
     {
-        builder.Services.AddDbContext<ApplicationDbContext>(options =>
-            options
-                .UseNpgsql(
-                    builder.Configuration.GetConnectionString("DefaultConnection"),
-                    npgsqlOptions => npgsqlOptions
-                        .MigrationsHistoryTable(HistoryRepository.DefaultTableName, Schemas.DailyCoder))
-                .UseSnakeCaseNamingConvention());
+        builder.Services.AddSingleton<IConnectionStringResolver, DefaultConnectionStringResolver>();
 
-        builder.Services.AddDbContext<ApplicationIdentityDbContext>(options => options
-            .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), npgsqlOptions =>
-                npgsqlOptions.MigrationsHistoryTable(HistoryRepository.DefaultTableName, Schemas.Identity))
-            .UseSnakeCaseNamingConvention());
+        builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
+        {
+            options.UseNpgsqlLoader(sp, typeof(ApplicationDbContext) , Schemas.DailyCoder);
+        });
+
+        builder.Services.AddDbContext<ApplicationIdentityDbContext>((sp, options) =>
+        {
+            options.UseNpgsqlLoader(sp, typeof(ApplicationIdentityDbContext) , Schemas.Identity);
+        });
+
+        //builder.Services.AddDbContext<ApplicationDbContext>(options => options
+        //    .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), npgsqlOptions =>
+        //        npgsqlOptions.MigrationsHistoryTable(HistoryRepository.DefaultTableName, Schemas.DailyCoder))
+        //    .UseSnakeCaseNamingConvention());
 
         return builder;
     }

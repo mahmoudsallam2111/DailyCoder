@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using DailyCoder.Api.Attributes;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace DailyCoder.Api.Database;
 
+[ConnectionStringName("IdentityConnectionString")]
 public sealed class ApplicationIdentityDbContext(DbContextOptions<ApplicationIdentityDbContext> options)
     : IdentityDbContext(options)
 {
